@@ -1,0 +1,1 @@
+2021-02-25 12:06:19.260 | DEBUG    | core.database:execute_sql:128 - ('CREATE DATABASE IF NOT EXISTS db_demo', None)
