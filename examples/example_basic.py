@@ -321,7 +321,7 @@ def hello_select_all():
     # 获取所有条数据
     # 使用select()类方法获取查询字段（参数留空表示取全部字段），然后可以链式使用all方法获取全部数据
     res_all = Metrics.select().all()
-    # 此时的对象为一个 QueryResultWrapper
+    # 此时的对象为一个 QueryResultWrapper 是一个个的数据Model 对象
     for res in res_all:
         print(res.col_name, res.col_double, res.col_int, res.col_float, res.ts)
 
@@ -355,6 +355,181 @@ def hello_to_pandas():
     pd_data = raw_results.to_dataframe(50)
     print(pd_data.head())
 
+def hello_calc_on_column():
+    # 直接对select得到的结果进行列的四则运算
+    # # 使用select()类方法获取查询字段时，可以返回某列或多列间的值加、减、乘、除、取余计算结果（+ - * / %）
+    # # 测试发现该方法不如起别名的好用，该方法的计算结果列为空
+    # res_all = Metrics.select((Metrics.col_double + Metrics.col_float), Metrics.ts).all()
+    # for res in res_all:
+    #     itm = res.get(Metrics.col_double + Metrics.col_float)
+    #     print(itm, res.ts)  # 返回的结果对象可以用get方法获取原始计算式结果
+
+
+    # 推荐：可以给计算结果字段起别名
+    # 此处需要重点学习下，相当于是将alias的结果作为select的字段使用
+    res_all = Metrics.select(((Metrics.col_double + Metrics.col_float) * Metrics.col_double).alias('new_name'),
+                            Metrics.ts).all()  # 给运算式起别名（不仅运算式，其他放在select函数中的任何属性都可以使用别名）
+    for res in res_all:
+        print(res.new_name, res.ts)  # 使用别名获取运算结果
+
+
+def hello_where():
+    # where查询条件：
+    # 可以在select函数后链式调用where函数进行条件限
+    one_time = datetime.datetime.now() - datetime.timedelta(hours=10)
+    ress = Metrics.select().where(Metrics.ts > one_time).all()
+    # 限定条件可以使用 > < == >= <= != and or ! 等。字符类型的字段可以使用 % 作为模糊查询（相当于like）
+    ress = Metrics.select().where(Metrics.col_float > 0 or Metrics.col_name % 'g%').all()
+    # where函数可以接收任意多参数，每个参数为一个限定条件，参数条件之间为"与"的关系。
+    ress = Metrics.select().where(Metrics.col_float > 0, Metrics.ts > one_time, Metrics.col_name % '%1').all()
+
+def hello_page_limit():
+    # 分页与limit：
+    # 可以在select函数后链式调用paginate函数进行分页操作，以下例子为取第6页 每页5条数据。
+    ress_1 = Metrics.select().paginate(6, page_size=10).all()
+    # ress_2 = Metrics.select().paginate(6).all()  # 默认page_size为20
+    # 可以在select函数后链式调用limit函数和offset函数条数限制和定位操作。
+    # ress_3 = Metrics.select().limit(2).offset(5).all()
+    # ress_4 = Metrics.select().limit(2).all()
+    for res in ress_1:
+        print(res.col_name, res.col_double, res.col_int, res.col_float, res.ts)
+
+# 意义不大，排序仅支持主键，更改的意义几乎为0
+def hello_orderation():
+    #排序（目前tdengine只支持主键排序）：
+    # 可以在select函数后链式调用desc或者asc函数进行时间轴的正序或者倒序查询
+    # 定义模型类的时候定义默认排序方法
+    class Metrics(Model):
+        cur = FloatField(db_column='c1')
+        curInt = IntegerField(db_column='c2')
+        curDouble = DoubleField(db_column='c3')
+        desc = BinaryField(db_column='des')
+        dd = PrimaryKeyField().desc()  # 可以在定义主键的时候调用field的desc或asc方法定义默认排序
+
+        class Meta:
+            # order_by= ['-dd'] #也可以在元数据类中定义‘-dd’代表倒序‘dd’ 代表正序
+            database = db
+
+    res = Metrics.select().desc().one()
+
+def hello_aggregation():
+    # 聚合函数：
+    # count
+    count = Metrics.select().count()  # 统计行数
+    print(count)  # 结果： 100
+    count = Metrics.select().count(Metrics.col_name)  # 统计指定列非空行数
+    print(count)  # 结果： 90
+    # avg（sum,stddev,min,max,first,last,last_row,spread使用方法与avg相同）
+    avg1 = Metrics.select().avg(Metrics.col_float, Metrics.col_double.alias('aa'))  # 可以同时获取多列，并且可以使用别名
+    print(avg1.get(Metrics.col_float.avg()), avg1.aa)  # 打印统计结果
+    # twa 必须配合where函数，且必须选择时间段
+    twa1 = Metrics.select().where(Metrics.ts > datetime.datetime(2020, 11, 19, 15, 9, 12, 946118),
+                                 Metrics.ts < datetime.datetime.now()).twa(Metrics.col_float, Metrics.col_double.alias('aa'))
+    print(twa1.get(Metrics.col_float.twa()), avg1.aa)  # 打印统计结果
+
+    # diff
+    diffs = Metrics.select().diff(Metrics.col_int.alias('aa'))  # diff目前只可以聚合一个属性。
+    for diff1 in diffs:
+        print(diff1.aa, diff1.ts)  # 时间点数据同时返回
+
+    # top(bottom函数使用方式相同)
+    tops = Metrics.select().top(Metrics.col_float, 3, alias='aa')  # top函数需要提供要统计的属性，行数，以及别名
+    for top1 in tops:
+        print(top1.aa, top1.ts)  # 时间点数据同时返回
+    tops = Metrics.select().top(Metrics.col_float, 3)  # 可以不指定别名
+    for top1 in tops:
+        print(top1.get(Metrics.col_float.top(3)))  # 不指定别名，需用使用get方法获取属性
+
+    # percentile (apercentile函数使用方式相同) 
+    percentile1 = Metrics.select().percentile((Metrics.col_float, 1, 'aa'), (
+    Metrics.col_double, 2))  # 每个属性参数为一个元组（数组），分别定义要统计的属性，P值（P值取值范围0≤P≤100），可选别名。
+    print(percentile1.aa)
+    print(percentile1.get(Metrics.col_double.percentile(2)))  # 不指定别名，需用使用get方法获取属性
+
+    # leastsquares
+    leastsquares1 = Metrics.select().leastsquares((Metrics.col_float, 1, 1, 'aa'), (
+    Metrics.col_double, 2, 2))  # 每个属性参数为一个元组（数组），分别定义要统计的属性，start_val(自变量初始值)，step_val(自变量的步长值)，可选别名。
+    print(leastsquares1.aa)  # 结果： {slop:-0.001595, intercept:0.212111}
+    print(leastsquares1.get(Metrics.col_double.leastsquares(2, 2)))  # 不指定别名，需用使用get方法获取属性
+
+def hello_groupby():
+    # group_by分组查询：
+
+    # 可以在链式调用中加入group_by函数指定要分组的字段。
+    # 然后在select函数中指定要分组统计的聚合函数（支持的聚合函数有：count、avg、sum 、stddev、leastsquares、percentile、min、max、first、last）
+    groups = Metrics.select(Metrics.col_name, Metrics.col_int.avg().alias('intavg'),
+                           Metrics.col_float.count().alias('curcount')).group_by(Metrics.col_name).all()
+    for group in groups:
+        print(group.desc)
+        if group.col_name == 'g1':
+            # assert group.get(Metrics.curInt.count()) == 10
+            assert group.intavg == 5.5
+            assert group.curcount == 10
+        if group.col_name == 'g2':
+            assert group.intavg == 10.5
+            assert group.curcount == 20
+
+def hello_interval():
+    import datetime
+    # 时间维度聚合interval:
+    # 可以使用interval函数调用TDengine时间纬度聚合功能,使用方法如下 时间间隔与offset参数参考TDengine文档（s:秒，m:分钟，h:小时）。fill参数可选字符串(NONE | PREV | NULL | LINEAR)或者任意数值,例如：fill=1.2将会以固定值填充。
+    results= Metrics.select(Metrics.col_float.avg().alias('aa'),
+                            Metrics.col_float.first().alias('bb')
+                            ).where(Metrics.ts > (datetime.datetime.now()-datetime.timedelta(days=1))
+                                    ).interval('10s',fill='PREV',offset='5s').all()
+    for result in results:
+        print(result.aa,result.bb)
+
+def hello_join():
+    # join查询：
+    # 目前并支持多表join查询，需要多表查询的情况请使用raw_sql函数，执行原始sql语句。以后的版本会补充此功能。
+    pass
+
+def hello_SuperTable():
+    # 超级表定义：
+    # 超级表模型类继承自SuperModel类
+    class Meters(SuperModel):
+        cur = FloatField(db_column='c1')
+        curInt = IntegerField(db_column='c2')
+        curDouble = DoubleField(db_column='c3')
+        desc = BinaryField(db_column='des')
+
+        class Meta:
+            database = db
+            db_table = 'meters'
+            # Meta类中定义的Field，为超级表的标签
+            location = BinaryField(max_length=30)
+            groupid = IntegerField(db_column='gid')
+
+    # 超级表的建表、删表、检查表是否存在：
+    #
+    Meters.create_table(safe=True) #建表 safe：如果表存在，则跳过建表指令。命令运行成功放回True,失败raise错误
+    # db.create_table(Meters,safe=True) #通过数据库对象建表，功能同上
+    Meters.drop_table(safe=True) #删表 safe：如果表不存在，则跳过删表指令。命令运行成功放回True,失败raise错误
+    # db.drop_table(Meters,safe=True) #通过数据库对象删表，功能同上
+    Meters.supertable_exists() #查看表是否存在，存在返回True,不存在返回：False
+
+    # 超级表动态建表：
+    # 超级表除了使用定义模型类的方式建表外，也提供了动态定义字段建表的功能。
+    #可以使用SuperModel类的类方法dynamic_create_table方法动态建表，第一个参数为表名，然后需要指定数据库，与是否安全建表
+    # 需要额外提供tags参数，参数值为一个字典(使用方法如下例)，设置超级表所有的标签。
+    # 关键词参数可以任意多个，指定表中的字段。
+    # Meter_dynamic= SuperModel.dynamic_create_table('meterSD',database=db,safe=True,
+    #                                                tags={'gid':IntegerField(db_column='tag1')},
+    #                                                test1 = FloatField(db_column='t1'),
+    #                                                test2 = IntegerField(db_column='t2')
+    #                                                )
+
+    # 函数返回的对象为SuperModel类对象。使用方法与静态继承的模型类相同。
+    # Meter_dynamic.supertable_exists()
+    # Meter_dynamic.drop_table()
+    # 从超级表建立子表：
+
+    SonTable_d3 = Meters.create_son_table('d3',location='beijing',groupid=3) #生成字表模型类的同时，自动在数据库中建表。
+
+    SonTable_d3.table_exists() # SonTable_d3的使用方法和继承自Modle类的模型类一样。可以进行插入与查询操作
+    # m = SonTable_d3(cur = 65.8,curInt=10,curDouble=1.1,desc='g1',ts = datetime.datetime.now())
+    # m.save()
 
 
 def hello_list():
@@ -380,9 +555,11 @@ def run():
     # hello_ORM_insert2()
     # hello_select_one()
     # hello_select_all()
-    hello_to_numpy()
+    # hello_to_numpy()
     # hello_to_pandas()
-
+    # hello_calc_on_column()
+    # hello_page_limit()
+    hello_interval()
 
 if __name__=="__main__":
     run()

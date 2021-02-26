@@ -14,8 +14,9 @@
 -[x] 解决cursor继承自list后的无法索引问题，当前的cursor操作能够实现：
     1. 直接print（仿照dataframe的输出）；
     2. 直接下标索引访问元素；
-    3. 直接访问data或者head属性获取结果信息；
+    3. 直接访问data或者head属性获取结果信息；  
 -[x] 完善crown源码中Model以及SuperModel做 describe 操作时，若表不存在则自动创建的能力      
 -[x] 完善cursor中的to_dataframe过程，利用cursor本身是list的优势快速构建  
 -[x] 完善to_dataframe中的主键索引设置问题，当ts不存在时将以head中的第一个为主键  
 -[x] 增加cursor中的to_ndarray 过程，利用cursor本身是list的优势快速转换   
+-[x] 更新了example中的对于limit/interval/group等用法的使用实例   
