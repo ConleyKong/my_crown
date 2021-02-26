@@ -28,6 +28,7 @@ from my_crown.core.common import DoesNotExist
 from my_crown.core.field import Field, PrimaryKeyField, DateTimeField, NCharField, FloatField, DoubleField, \
     IntegerField, BigIntegerField, SmallIntegerField, TinyIntegerField, BinaryField, BooleanField, FieldDescriptor
 from my_crown.core.query import SelectQuery, InsertQuery, CreateSonTableQuery
+from my_crown.mycore.taos_client import taos_database
 
 # from core.field import *
 # __all__ = [
@@ -36,7 +37,7 @@ from my_crown.core.query import SelectQuery, InsertQuery, CreateSonTableQuery
 #     'TinyIntegerField','NCharField','BinaryField','TdEngineDatabase','SuperModel'
 # ]
 class ModelOptions(object):
-    def __init__(self, cls, database, db_table=None,
+    def __init__(self, cls, database=taos_database, db_table=None,
                  order_by=None, primary_key=None):
         self.model_class = cls
         self.name = cls.__name__.lower()
