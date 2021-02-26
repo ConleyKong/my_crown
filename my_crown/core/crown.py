@@ -12,6 +12,10 @@
 """
 import os
 import sys
+from copy import deepcopy
+import re
+from datetime import datetime
+
 if "win" in sys.platform:
     basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 else:
@@ -20,11 +24,11 @@ if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
-from copy import deepcopy
-from core.database import *
-from core.query import *
-import re
-from datetime import datetime
+from my_crown.core.common import DoesNotExist
+from my_crown.core.field import Field, PrimaryKeyField, DateTimeField, NCharField, FloatField, DoubleField, \
+    IntegerField, BigIntegerField, SmallIntegerField, TinyIntegerField, BinaryField, BooleanField, FieldDescriptor
+from my_crown.core.query import SelectQuery, InsertQuery, CreateSonTableQuery
+
 # from core.field import *
 # __all__ = [
 #     'IntegerField', 'BigIntegerField', 'PrimaryKeyField', 'FloatField', 'DoubleField',

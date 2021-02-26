@@ -20,3 +20,4 @@
 -[x] 完善to_dataframe中的主键索引设置问题，当ts不存在时将以head中的第一个为主键  
 -[x] 增加cursor中的to_ndarray 过程，利用cursor本身是list的优势快速转换   
 -[x] 更新了example中的对于limit/interval/group等用法的使用实例   
+-[x] 优化工程结构，将必须的依赖代码放入my_crown内  

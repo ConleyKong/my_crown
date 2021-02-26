@@ -10,10 +10,9 @@
     Change Activity:
         2021/2/24 :    创建并初始化本文件
 """
-import json
 import os
 import sys
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from datetime import datetime
 
 if "win" in sys.platform:
@@ -96,8 +95,6 @@ class BaseCursor(list):
         df = self.to_dataframe(20,False)
         return str(df.head())
 
-
-
 # 基于RestFul执行的Cursor是执行taos-sql的最基础类，不但具有执行功能还需要能够记录执行结果
 class RestfulCursor(BaseCursor):
     """ Cursor对象除了带有execute功能外还需要能够承载执行后的结果
@@ -141,7 +138,6 @@ class RestfulCursor(BaseCursor):
         else:
             raise Exception(f'server connect executing error on database: {self.conn.db_name}')
 
-
 # 原生的 Cursor
 class RawCursor(BaseCursor):
 
@@ -178,8 +174,3 @@ class RawCursor(BaseCursor):
         else:
             raise Exception(f'server connect executing error on database: {self.conn.db_name}')
 
-
-
-
-
-       

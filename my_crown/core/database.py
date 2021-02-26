@@ -22,9 +22,9 @@ print(basedir)
 if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-from tools.loguru_tools import logger
-from core.query import *
-
+from my_crown.core.common import dict_update
+from my_crown.core.query import QueryCompiler, SelectQuery
+from my_crown.tools.loguru_tools import logger
 
 class Database(object):
     commit_select = False

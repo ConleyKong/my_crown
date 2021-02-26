@@ -23,7 +23,7 @@ if basedir not in sys.path:
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-from tools.loguru_tools import logger
+from my_crown.tools.loguru_tools import logger
 
 __all__ = [
     'show_run_time',

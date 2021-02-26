@@ -13,8 +13,6 @@
 import os
 import sys
 
-from core.database import Database
-
 if "win" in sys.platform:
     basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 else:
@@ -22,8 +20,9 @@ else:
 if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-from mycore.connections import RestfulConn, RawConn
-from tools.loguru_tools import logger
+from my_crown.mycore.connections import RestfulConn, RawConn
+from my_crown.tools.loguru_tools import logger
+from my_crown.core.database import Database
 
 class TdEngineDatabase(Database):
 
@@ -37,7 +36,7 @@ class TdEngineDatabase(Database):
                 #   服务器域名映射和taos.cfg中的firstEP（linux：/etc/taos/taos.cfg windows：C:\TDengine\cfg\taos.cfg）
                 # 其二是存在python版本的taos连接器
                 if "win" in sys.platform:
-                    from drivers.windows.python3 import taos
+                    from my_crown.drivers.windows.python3 import taos
                     target_file = "taos.dll"
                     dst_dll_dir = "C:/windows/system32/"
                     dst_dll_file = f"{dst_dll_dir}{target_file}"
@@ -48,7 +47,7 @@ class TdEngineDatabase(Database):
                         logger.warning(f"目标dll文件[{dst_dll_file}]不存在，尝试使用程序自带dll({bkup_dll_path})  ")
                         sys.path.append(bkup_dll_path)
                 elif "linux" in sys.platform:
-                    from drivers.linux.python3 import taos
+                    from my_crown.drivers.linux.python3 import taos
                     # 确保依赖的so文件存在
                     target_file = f"libtaos.so.{self.driver_version}"
                     dst_dll_dir = f"/usr/local/taos/driver/"

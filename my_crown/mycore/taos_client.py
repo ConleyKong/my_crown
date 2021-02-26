@@ -20,8 +20,8 @@ else:
 if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-from tools.config_tools import mycrown_configs
-from mycore.databases import TdEngineDatabase
+from my_crown.tools.config_tools import mycrown_configs
+from my_crown.mycore.databases import TdEngineDatabase
 
 
 # 每个线程一个独立实例为好，不保证线程安全

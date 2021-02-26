@@ -12,6 +12,7 @@
 """
 import os
 import sys
+import datetime
 
 if "win" in sys.platform:
     basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
@@ -20,10 +21,12 @@ else:
 if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-from core.crown import *
-from mycore.databases import TdEngineDatabase
-from mycore.taos_client import TDEngineClient
-from tools.common_tools import show_run_time
+from my_crown.core.field import FloatField, IntegerField, DoubleField, BinaryField, PrimaryKeyField
+from my_crown.core.crown import Model, SuperModel
+from my_crown.mycore.databases import TdEngineDatabase
+from my_crown.mycore.taos_client import TDEngineClient
+from my_crown.tools.common_tools import show_run_time
+
 
 DB_NAME = "demo"
 conn_params = {"host": '192.168.40.140',
@@ -554,12 +557,12 @@ def run():
     # hello_ORM_insert1()
     # hello_ORM_insert2()
     # hello_select_one()
-    # hello_select_all()
+    hello_select_all()
     # hello_to_numpy()
     # hello_to_pandas()
     # hello_calc_on_column()
     # hello_page_limit()
-    hello_interval()
+    # hello_interval()
 
 if __name__=="__main__":
     run()

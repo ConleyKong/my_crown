@@ -19,16 +19,16 @@ if "win" in sys.platform:
     if basedir not in sys.path:
         sys.path.append(basedir)
         print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-    from drivers.windows.python3 import taos
+    from my_crown.drivers.windows.python3 import taos
     print(">>>> running on windows ... ")
 else:
     basedir = os.path.abspath(os.getcwd() + "/../")
     if basedir not in sys.path:
         sys.path.append(basedir)
         print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-    from drivers.linux.python3 import taos
+    from my_crown.drivers.linux.python3 import taos
     print(">>>> running on Linux ... ")
-from mycore.cursors import RestfulCursor, RawCursor
+from my_crown.mycore.cursors import RestfulCursor, RawCursor
 
 class Row(list):
     def __init__(self,arr,head):

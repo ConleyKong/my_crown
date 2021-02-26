@@ -14,6 +14,7 @@ import os
 import sys
 import datetime
 import re
+
 if "win" in sys.platform:
     basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 else:
@@ -21,8 +22,8 @@ else:
 if basedir not in sys.path:
     sys.path.append(basedir)
     print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
-from core.common import *
-
+from my_crown.core.common import Ordering, OP_AND, OP_OR, OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_XOR, OP_EQ, OP_LT, OP_LTE, \
+    OP_GT, OP_GTE, OP_NE, OP_IN, OP_IS, OP_LIKE, OP_ILIKE
 
 class Leaf(object):
     def __init__(self):
