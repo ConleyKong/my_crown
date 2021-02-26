@@ -6,3 +6,6 @@
 -[x] 将本地驱动连接中执行select时的底层接口由fetchall改为 fetchall_block,效率提升明显    
 -[x] 数据拉取的耗时要小于数据转换的耗时，比如打印数据、转换dataframe等   
 -[x] 对于拥有ts的数据结果，支持基于head和data转换为DataFrame结构   
+
+## version 0.2
+-[x] 在taos_client中增加基于yaml配置文件的启动方式   

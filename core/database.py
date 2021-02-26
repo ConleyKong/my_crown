@@ -14,8 +14,6 @@ import os
 import sys
 import threading
 
-from tools.common_tools import show_run_time
-
 if "win" in sys.platform:
     basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 else:
@@ -43,7 +41,7 @@ class Database(object):
     subquery_delete_same_table = True
 
     def __init__(self, db_name, threadlocals=False, autocommit=True,
-                 fields=None, ops=None,debug=True, **connect_kwargs):
+                 fields=None, ops=None,debug=False, **connect_kwargs):
         self.init(db_name, **connect_kwargs)
         self.debug = debug
 

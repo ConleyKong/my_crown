@@ -1,0 +1,12 @@
+runtime-confs:
+  developing: False
+tdengine-confs:
+  version: 2.0.14.0
+  host: nginx-1
+  console_port: 6030
+  rest_port: 6041
+  user: root
+  pswd: taosdata
+  database: db_tracelog
+  debug: False
+  con_type: native  # default模式优先尝试python连接器，失败后使用rest方式；rest方式直接使用rest的方式进行连接
