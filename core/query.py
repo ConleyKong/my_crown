@@ -18,7 +18,7 @@ else:
     basedir = os.path.abspath(os.getcwd() + "/../")
 if basedir not in sys.path:
     sys.path.append(basedir)
-    print(f"{os.path.basename(__file__)} appended {basedir} into system path")
+    print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
 from core.field import *
 from functools import reduce
@@ -146,6 +146,7 @@ class QueryCompiler(object):
         if qnode is not None:
             return self.parse_expr(qnode, alias_map)
         return '', []
+
     def parse_expr_list(self, s, alias_map):
         parsed = []
         data = []
@@ -158,7 +159,7 @@ class QueryCompiler(object):
 
     def parse_select_query(self, query, start=1, alias_map=None):
         model = query.model_class
-        db = model._meta.db_name
+        db = model._meta.database
         parts = ['SELECT']
         params = []
 
@@ -225,6 +226,7 @@ class QueryCompiler(object):
         parts.append('VALUES (%s)' % ', '.join(s[1] for s in sets))
 
         return ' '.join(parts), params
+
     def parse_createsontable_query(self,query,safe=True):
         model = query.model_class
         parts = ['CREATE TABLE']
@@ -270,6 +272,7 @@ class QueryCompiler(object):
         if blocks != None:
             parts.append('BLOCKS %s' % blocks)
         return parts
+
     def parse_alter_database(self, database,keep= None,comp=None,replica=None,quorum=None,blocks=None):
         parts = ['ALTER DATABASE']
         parts.append(database)
@@ -284,31 +287,40 @@ class QueryCompiler(object):
         if blocks != None:
             parts.append('BLOCKS %s' % blocks)
         return parts
+
     def parse_drop_database(self, database, safe=False):
         parts = ['DROP DATABASE']
         if safe:
             parts.append('IF EXISTS')
         parts.append(database)
         return parts
+
     def create_database(self, database, safe=False,keep= None,comp=None,replica=None,quorum=None,blocks=None):
         return ' '.join(self.parse_create_database(database,safe,keep,comp,replica,quorum,blocks))
+
     def alter_database(self, database,keep= None,comp=None,replica=None,quorum=None,blocks=None):
         return ' '.join(self.parse_alter_database(database,keep,comp,replica,quorum,blocks))
+
     def show_database(self, database):
         return 'SHOW DATABASES'
+
     def show_tables(self, database,super=False):
         if super:
             return 'SHOW %s.STABLES' % database
         else:
             return 'SHOW %s.TABLES' % database
+
     def drop_database(self, database, safe=False):
         return ' '.join(self.parse_drop_database(database, safe))
+
     def create_table(self, model_class, safe=False):
         return ' '.join(self.parse_create_table(model_class, safe))
+
     def describe_table(self,model_class):
         parts = ['DESCRIBE ']
         parts.append(self.quote(model_class._meta.db_table))
         return ' '.join(parts)
+
     def drop_table(self, model_class, fail_silently=False, cascade=False):
         parts = ['DROP TABLE']
         if fail_silently:
@@ -345,7 +357,7 @@ class Query(object):
 
     def __init__(self, model_class):
         self.model_class = model_class
-        self.database = model_class._meta.db_name
+        self.database = model_class._meta.database
 
         self._dirty = True
         self._query_ctx = model_class
@@ -692,10 +704,14 @@ class SelectQuery(Query):
             return self._qr
         else:
             return self._qr
+
     def all_raw(self):
         return self.database.execute(self)
+
     def all(self):
         return self.execute()
+
+
 class InsertQuery(Query):
     def __init__(self, model_class, insert=None):
         # mm = model_class._meta
@@ -723,7 +739,7 @@ class CreateSonTableQuery(Query):
         # query = dict((mm.fields[f], v) for f, v in mm.get_default_dict().items())
         # query.update(values)
         self._tags = values
-        self.table_name = "%s.%s" % (model_class._meta.db_name.db_name, table_name)
+        self.table_name = "%s.%s" % (model_class._meta.database.db_name, table_name)
         super(CreateSonTableQuery, self).__init__(model_class)
 
     where = not_allowed('where clause')

@@ -18,14 +18,14 @@ else:
     basedir = os.path.abspath(os.getcwd() + "/../")
 if basedir not in sys.path:
     sys.path.append(basedir)
-    print(f"{os.path.basename(__file__)} appended {basedir} into system path")
+    print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
 from copy import deepcopy
-from core.field import *
 from core.database import *
 from core.query import *
 import re
 from datetime import datetime
+# from core.field import *
 # __all__ = [
 #     'IntegerField', 'BigIntegerField', 'PrimaryKeyField', 'FloatField', 'DoubleField',
 #     'DateTimeField','BooleanField', 'Model', 'DoesNotExist',  'Field','SmallIntegerField',
@@ -170,6 +170,7 @@ class Model(metaclass=BaseModelMetaclass):
 
     def get_ts(self):
         return getattr(self, self._meta.primary_key.name)
+
     def set_ts(self, ts):
         setattr(self, self._meta.primary_key.name, ts)
 
@@ -178,7 +179,7 @@ class Model(metaclass=BaseModelMetaclass):
         return cls._meta.database.create_table(cls,safe)
 
     @classmethod
-    def dynamic_create_table(cls,table_name,database=default_database,safe=True,**fields):
+    def dynamic_create_table(cls,table_name,database,safe=True,**fields):
         """ 动态创建Taos表结构
 
         :param table_name: 待创建的表名称
@@ -193,7 +194,7 @@ class Model(metaclass=BaseModelMetaclass):
         return resModel
 
     @classmethod
-    def model_from_table(cls,table_name,database=default_database):
+    def model_from_table(cls,table_name,database):
         """ 从目标数据库中拿到指定的表对应的模型实例
 
         :param table_name: 目标表名称
@@ -238,19 +239,30 @@ class Model(metaclass=BaseModelMetaclass):
     @classmethod
     def drop_table(cls,safe=True):
         return cls._meta.database.drop_table(cls,safe)
+
     @classmethod
     def describe_table(cls):
+        if not cls.table_exists():
+            cls.create_table()
         return cls._meta.database.describe_table(cls)
+
     @classmethod
     def table_exists(cls):
         return cls._meta.db_table[cls._meta.db_table.index('.')+1:] in cls._meta.database.get_tables()
         # return cls._meta.db_table in ["%s.%s" % (cls._meta.database.database,x[0]) for x in cls._meta.database.get_tables()]
+
     @classmethod
     def select(cls, *selection):
+        """ 选择特定字段
+
+        :param selection: 类中的属性名，支持多个属性名
+        :return:
+        """
         query = SelectQuery(cls, *selection)
         if cls._meta.order_by:
             query = query.order_by(*cls._meta.order_by)
         return query
+
     @classmethod
     def insert(cls, **insert):
         pk = cls._meta.primary_key
@@ -265,6 +277,7 @@ class Model(metaclass=BaseModelMetaclass):
                     value = value.strftime("%Y-%m-%d %H:%M:%S.%f")
                 fdict.append({'obj':cls._meta.fields[field],'value':value})
         return InsertQuery(cls, fdict).execute()
+
     def save(self):
         field_dict = dict(self._data)
         pk = self._meta.primary_key
@@ -274,6 +287,7 @@ class Model(metaclass=BaseModelMetaclass):
             field_dict[pk.name] = now
         # insert = self.insert(**field_dict)
         return self.insert(**field_dict)
+
     def get(self,expr):
         p1 = re.compile(r'^\((.*?)\)$', re.S)
         query_expr=type(self)._meta.database.get_compiler().parse_expr(expr)
@@ -298,8 +312,9 @@ class SuperModel(metaclass=BaseModelMetaclass):
     @classmethod
     def create_table(cls,safe=True):
         return cls._meta.database.create_table(cls,safe)
+
     @classmethod
-    def dynamic_create_table(cls,table_name,database=default_database,safe=True,tags={},**fields):
+    def dynamic_create_table(cls,table_name,database,safe=True,tags={},**fields):
         attr = dict(database =  database,db_table=table_name)
         attr.update(tags)
         _meta= type('Meta', (object,), attr)
@@ -307,8 +322,9 @@ class SuperModel(metaclass=BaseModelMetaclass):
         resModel = type(table_name, (cls,), fields)
         resModel.create_table(safe=safe)
         return resModel
+
     @classmethod
-    def supermodel_from_table(cls,table_name,database=default_database):
+    def supermodel_from_table(cls,table_name,database):
         if table_name in database.get_supertables():
             fields = {}
             tags =dict(database = database,db_table=table_name)
@@ -346,6 +362,7 @@ class SuperModel(metaclass=BaseModelMetaclass):
             return resModel
         else:
             return None
+
     @classmethod
     def create_son_table(cls,name,**kwargs):
         cls._meta.database.create_table(cls,safe=True)
@@ -373,22 +390,29 @@ class SuperModel(metaclass=BaseModelMetaclass):
             del son_model._meta.fields[name]
         son_model._tags =None
         return son_model
+
     @classmethod
     def drop_table(cls,safe=True):
         return cls._meta.database.drop_table(cls,safe)
+
     @classmethod
     def describe_table(cls):
+        if not cls.supertable_exists():
+            cls.create_table()
         return cls._meta.database.describe_table(cls)
+
     @classmethod
     def supertable_exists(cls):
         # tables = ["%s.%s" % (cls._meta.database.database,x[3]) for x in cls._meta.database.get_tables()]
         return cls._meta.db_table[cls._meta.db_table.index('.')+1:] in cls._meta.database.get_supertables()
+
     @classmethod
     def select(cls, *selection):
         query = SelectQuery(cls, *selection)
         if cls._meta.order_by:
             query = query.order_by(*cls._meta.order_by)
         return query
+
     def get(self,expr):
         p1 = re.compile(r'^\((.*?)\)$', re.S)
         query_expr=type(self)._meta.database.get_compiler().parse_expr(expr)

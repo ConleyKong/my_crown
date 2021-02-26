@@ -7,6 +7,6 @@ tdengine-confs:
   rest_port: 6041
   user: root
   pswd: taosdata
-  database: db_tracelog
+  database: demo
   debug: False
   con_type: native  # default模式优先尝试python连接器，失败后使用rest方式；rest方式直接使用rest的方式进行连接

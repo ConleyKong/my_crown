@@ -18,7 +18,7 @@ else:
     basedir = os.path.abspath(os.getcwd() + "/")
 if basedir not in sys.path:
     sys.path.append(basedir)
-    print(f"{os.path.basename(__file__)} appended {basedir} into system path")
+    print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
 from .tools import common_tools,config_tools,date_tools,loguru_tools
 from .drivers import *

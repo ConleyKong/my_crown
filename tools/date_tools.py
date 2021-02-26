@@ -22,7 +22,7 @@ import numpy as np
 basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 if basedir not in sys.path:
     sys.path.append(basedir)
-    print(f"{os.path.basename(__file__)} appended {basedir} into system path")
+    print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 
 # 毫秒转整数的映射关系
 msec_repo={'a':1,'s':1000,'m':60*1000,'h':60*60*1000,'d':24*60*60*1000,'w':7*24*60*60*1000}

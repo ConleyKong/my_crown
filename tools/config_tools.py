@@ -22,7 +22,7 @@ import yaml
 basedir = os.path.abspath(os.path.dirname(__file__) + "/../")
 if basedir not in sys.path:
     sys.path.append(basedir)
-    print(f"{os.path.basename(__file__)} appended {basedir} into system path")
+    print(f">>>> {os.path.basename(__file__)} appended {basedir} into system path")
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from loguru import logger
 log_dir = os.path.abspath(basedir + "/logs/")
