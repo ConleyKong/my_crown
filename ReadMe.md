@@ -21,3 +21,4 @@
 -[x] 增加cursor中的to_ndarray 过程，利用cursor本身是list的优势快速转换   
 -[x] 更新了example中的对于limit/interval/group等用法的使用实例   
 -[x] 优化工程结构，将必须的依赖代码放入my_crown内  
+-[x] 为taos_client中加入默认yaml配置的数据库的客户端，去除example文件，直接放入my_crown目录下  

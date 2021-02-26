@@ -24,7 +24,6 @@ if basedir not in sys.path:
 from my_crown.core.field import FloatField, IntegerField, DoubleField, BinaryField, PrimaryKeyField
 from my_crown.core.crown import Model, SuperModel
 from my_crown.mycore.databases import TdEngineDatabase
-from my_crown.mycore.taos_client import TDEngineClient
 from my_crown.tools.common_tools import show_run_time
 
 
@@ -82,8 +81,8 @@ def hello_taos_client():
 
     :return:
     """
-    client = TDEngineClient()
-    print(client.get_databases())
+    from my_crown.mycore.taos_client import taos_database
+    print(taos_database.get_databases())
 
 def hello_create_database():
     DB_NAME = "demo"

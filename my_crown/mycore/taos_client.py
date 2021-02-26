@@ -40,10 +40,10 @@ class TDEngineClient(TdEngineDatabase):
                        }
         super(TDEngineClient, self).__init__(taos_conf.get('database'),**conn_params)
 
+taos_database = TDEngineClient()
 
 def run():
-    client = TDEngineClient()
-    print(client.get_databases())
+    print(taos_database.get_databases())
 
 if __name__=="__main__":
     run()
