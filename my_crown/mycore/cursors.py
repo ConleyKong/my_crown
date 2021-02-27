@@ -157,20 +157,23 @@ class RawCursor(BaseCursor):
         if param:
             param = map(lambda x: '"%s"' % x if isinstance(x, str) or isinstance(x, datetime) else x, param)
             sql = sql.format(*param)
-        local_cursor = self.conn.execute_sql(sql)
-        if local_cursor:
-            cols = [x[0] for x in local_cursor.description]
-            self.affected_rows = local_cursor.affected_rows
+        self.local_cursor = self.conn.execute_sql(sql)
+        if self.local_cursor:
+            cols = [x[0] for x in self.local_cursor.description]
+            self.affected_rows = self.local_cursor.affected_rows
             self.head = cols
             if len(cols) > 0:  # 是select语句  #否则是 update或者insert语句
                 # data = local_cursor.fetchall()  # Use fetchall to fetch data in a list
-                data = local_cursor.fetchall_block() # fetchall内部使用的for循环，效率很低，fetchall_block进行了分批，速度更快一点
+                data = self.local_cursor.fetchall_block()  # fetchall内部使用的for循环，效率很低，fetchall_block进行了分批，速度更快一点
                 rows = len(data)
                 self.rowcount = rows
                 self.data = data
                 self.set_data(self.data)  # 当前是list的子对象，因此可以用于初始化list
                 # super(RawCursor, self).__init__(self.data)  # 当前是list的子对象，因此可以用于初始化list
+
+            self.local_cursor.close()
             return True
         else:
+            self.local_cursor.close()
             raise Exception(f'server connect executing error on database: {self.conn.db_name}')
 
